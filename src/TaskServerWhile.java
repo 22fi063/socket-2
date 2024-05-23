@@ -7,37 +7,47 @@ import java.util.Scanner;
 public class TaskServerWhile {
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("ポートを入力してください(5000など) → ");
-        int port = scanner.nextInt();
-        System.out.println("localhostの" + port + "番ポートで待機します");
 
         try {
 
-
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("ポートを入力してください(5000など) → ");
+            int port = scanner.nextInt();
+            scanner.close();
+            System.out.println("localhostの" + port + "番ポートで待機します");
             ServerSocket server = new ServerSocket(port);
 
             while (true) {
-                Socket socket = server.accept();
-                System.out.println("接続されました。相手の入力を待っています......");
+                System.out.println("接続を待っています......");
+                Socket socket = null;
+                ObjectInputStream ois = null;
+                ObjectOutputStream oos = null;
 
-                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+                try {
+                    socket = server.accept(); // クライアントからの接続要求を待ち、
+                    // 要求があればソケットを取得し接続を行う
+                    System.out.println("接続しました。相手の入力を待っています......");
 
-                TaskObject task = (TaskObject) ois.readObject(); // TaskObjectクラスでキャスト。
+                    ois = new ObjectInputStream(socket.getInputStream());
 
-                System.out.println("タスクを受け取りました。計算を実行します...");
-                task.exec(); // サーバで計算を実行
+                    TaskObject task = (TaskObject) ois.readObject();// Integerクラスでキャスト
+                    if (task.getResult() <= 1) { // 1以下の値が入力された場合に終了
+                        break;
+                    }
+                    task.exec();
+                    oos = new ObjectOutputStream(socket.getOutputStream());
 
-                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-                oos.writeObject(task); // 計算結果をクライアントに返送
-                oos.flush();
-
-                // close処理
-                ois.close();
-                oos.close();
-                socket.close();
+                    oos.writeObject(task);
+                    oos.flush();
+                    // close処理
+                    ois.close();
+                    oos.close();
+                    socket.close();
+                } catch (Exception e) {
+                    System.err.println("クライアントとの通信でエラーが発生しました");
+                    e.printStackTrace();
+                }
             }
-
         } catch (Exception e) {
             System.err.println("エラーが発生したのでプログラムを終了します");
             e.printStackTrace();
