@@ -13,10 +13,10 @@ public class TaskClientWhile {
 
         Socket socket = null;
         try {
-            socket = new Socket("localhost", port);
-            System.out.println("接続されました");
-
             while (true) {
+                socket = new Socket("localhost", port);
+                System.out.println("接続されました");
+
                 System.out.print("計算する数値を入力してください（0を入力すると終了します） → ");
                 int number = scanner.nextInt();
                 if (number == 0) {
@@ -38,6 +38,7 @@ public class TaskClientWhile {
                 // ストリームを閉じる
                 oos.close();
                 ois.close();
+                socket.close(); // ここでソケットを閉じる
             }
         } catch (ConnectException e) {
             System.err.println("接続できませんでした。サーバーが実行されていることを確認してください。");
